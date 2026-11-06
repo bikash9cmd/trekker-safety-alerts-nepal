@@ -1,4 +1,4 @@
-# Bato (बाटो): knowing when a trekking group hasn't arrived, and when a pass is about to close
+# Trekker Safety Alerts (Nepal): knowing when a trekking group hasn't arrived, and when a pass is about to close
 
 [![Try it live](https://img.shields.io/badge/Try_it-live-2ea44f?style=for-the-badge)](https://bato-trek-safety-nepal.onrender.com)
 
