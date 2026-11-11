@@ -28,6 +28,22 @@ def test_sms_commands(text, action, extra):
         assert getattr(c, k) == v
 
 
+@pytest.mark.parametrize("text,action,extra", [
+    ("HELP:ankle", "help", {"note": "ankle"}), ("HELP!!! fell above samdo", "help", {"note": "fell above samdo"}),
+    ("IN:Manang", "in", {"stop_text": "Manang"}), ("In-Chame", "in", {"stop_text": "Chame"}),
+    ("IN-मनाङ", "in", {"stop_text": "मनाङ"}), ("IN:", "in", {"stop_text": ""}),
+    ("bato:in manang AB12CD34EF", "in", {"stop_text": "manang", "trek_id": "AB12CD34EF"}),
+    ("STAY2", "stay", {"days": 2}), ("Stay-3", "stay", {"days": 3}), ("stay 2days", "stay", {"days": 2}),
+    ("stay ३", "stay", {"days": 3}), ("STAY9", "stay", {"days": 5}),
+    ("OK.", "ok", {}), ("S.O.S", "help", {}), ("INDIA chame", "unknown", {}), ("Okay", "unknown", {}),
+])
+def test_keyword_typed_without_a_space(text, action, extra):
+    c = sms.parse(text)
+    assert c.action == action
+    for k, v in extra.items():
+        assert getattr(c, k) == v
+
+
 def test_on_time_group_never_alarms(world):
     world.register()
     for d, h, stop in ((2, 13, "chame"), (3, 12, "upper pisang"), (4, 12, "manang"), (6, 11, "yak kharka"),
@@ -89,6 +105,14 @@ def test_check_in_landing_between_read_and_write_wins(world):
 def test_help_goes_straight_to_the_agency(world):
     world.register()
     r = world.sms("HELP twisted ankle", at(2, 11))
+    assert r.outcome == "help"
+    world.ladder.advance(world.now)
+    assert any("HELP from group of 3" in x and "twisted ankle" in x for _, x in world.phones.sent)
+
+
+def test_help_glued_to_its_note_still_reaches_the_agency(world):
+    world.register()
+    r = world.sms("HELP:twisted ankle", at(2, 11))
     assert r.outcome == "help"
     world.ladder.advance(world.now)
     assert any("HELP from group of 3" in x and "twisted ankle" in x for _, x in world.phones.sent)

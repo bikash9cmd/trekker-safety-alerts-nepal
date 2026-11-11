@@ -171,7 +171,7 @@ make hindcast    # storm-hold rule vs 10 years of real forecasts (artifacts/repo
 make simulate    # the alert-policy table and chart (~6 minutes)
 make cost        # cost model
 make live        # today's real forecast at the six passes, straight from NOAA's bucket
-make test        # 57 tests, including every Lambda handler against mocked AWS (moto)
+make test        # 74 tests, including every Lambda handler against mocked AWS (moto)
 ```
 
 **On AWS:** [infra/README.md](infra/README.md). One stack in ap-south-1 (Mumbai, the closest region to Nepal). I haven't left it deployed: it would cost little, but a safety service people might rely on shouldn't exist without the agencies and an SMS contract behind it.
@@ -195,7 +195,7 @@ bato/
 infra/            SAM template, state machine JSON, weather Dockerfile, deploy guide
 scripts/          pull the weather extracts from the public buckets
 data/             trail network, passes, processed weather extracts
-tests/            57 tests
+tests/            74 tests
 docs/             the engineering documents above
 ```
 

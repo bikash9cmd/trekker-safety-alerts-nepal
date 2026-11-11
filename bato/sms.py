@@ -27,6 +27,8 @@ CRITICAL, INFO = "critical", "info"
 COMMANDS = {"IN": "in", "ARRIVED": "in", "PUGE": "in", "PUGYO": "in", "OK": "ok", "THIK": "ok",
             "STAY": "stay", "BASCHHU": "stay", "HELP": "help", "SOS": "help", "BACHAU": "help"}
 TREK_ID = re.compile(r"\b[A-Z0-9]{10}\b")
+KEYWORDS = {*COMMANDS, "BATO"}
+GLUED = re.compile(r"([A-Za-z]+)(?![A-Za-z])\W*(\w.*)")   # "HELP:ankle", "IN-Chame", "STAY2"
 
 
 @dataclass
@@ -57,25 +59,34 @@ def parse(text: str) -> Command:
     words = text.strip().split()
     if not words:
         return Command("unknown")
-    head = re.sub(r"[^A-Z]", "", words[0].upper())
-    if head == "BATO" and len(words) > 1:      # people copy the keyword from the poster
-        words = words[1:]
-        head = re.sub(r"[^A-Z]", "", words[0].upper())
+    head, rest = _head(words)
+    if head == "BATO" and rest:                # people copy the keyword from the poster
+        head, rest = _head(rest)
     action = COMMANDS.get(head, "unknown")
-    rest = words[1:]
     trek_id = None
     for w in list(rest):
         if TREK_ID.fullmatch(w.upper()) and any(c.isdigit() for c in w):
             trek_id = w.upper()
             rest.remove(w)
     if action == "stay":
-        days = int(rest[0]) if rest and rest[0].isdigit() else 1
+        n = re.match(r"\d+", rest[0]) if rest else None   # "2", "2days", "२"
+        days = int(n.group()) if n else 1
         return Command("stay", trek_id=trek_id, days=max(1, min(days, 5)))
     if action == "in":
         return Command("in", stop_text=" ".join(rest), trek_id=trek_id)
     if action == "help":
         return Command("help", trek_id=trek_id, note=" ".join(rest)[:120])
     return Command(action, trek_id=trek_id)
+
+
+def _head(words: list[str]) -> tuple[str, list[str]]:
+    """The keyword of the first word and the words after it. A keyword typed without a space
+    ("HELP:ankle", "IN-Chame", "STAY2") is split from what follows; otherwise punctuation inside the
+    word is dropped, so "OK." and "S.O.S" still read as OK and SOS."""
+    m = GLUED.fullmatch(words[0])
+    if m and m.group(1).upper() in KEYWORDS:
+        return m.group(1).upper(), [m.group(2), *words[1:]]
+    return re.sub(r"[^A-Z]", "", words[0].upper()), words[1:]
 
 
 # --- outbound ----------------------------------------------------------------------------
