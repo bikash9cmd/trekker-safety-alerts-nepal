@@ -5,7 +5,7 @@ PY ?= python
 setup:            ## virtualenv with dev dependencies
 	$(PY) -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 
-test:             ## 57 tests, including every Lambda handler against mocked AWS
+test:             ## 74 tests, including every Lambda handler against mocked AWS
 	$(PY) -m pytest -q
 
 lint:
